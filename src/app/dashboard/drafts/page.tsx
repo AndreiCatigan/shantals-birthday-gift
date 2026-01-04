@@ -39,26 +39,30 @@ export default function DraftsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-50 p-6 md:p-12">
+    <div className="min-h-screen bg-stone-50 p-4 sm:p-6 md:p-12">
       <div className="max-w-5xl mx-auto">
-        <header className="flex justify-between items-center mb-12 border-b border-stone-200 pb-6">
-          <div>
+        
+        {/* --- Header Optimized for Alignment --- */}
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-12 border-b border-stone-200 pb-6">
+          <div className="w-full md:w-auto">
             <Link href="/dashboard">
               <Button variant="ghost" className="p-0 hover:bg-transparent text-stone-400 hover:text-rose-500 gap-2 mb-2">
                 <ArrowLeft className="w-4 h-4" />
-                Back to Vault
+                <span className="text-sm">Back to Vault</span>
               </Button>
             </Link>
-            <h1 className="text-4xl font-bold text-stone-800 font-[family-name:var(--font-handwritten)]">
+            <h1 className="text-3xl md:text-4xl font-bold text-stone-800 font-[family-name:var(--font-handwritten)]">
               Your Drafts
             </h1>
           </div>
         </header>
 
         {loading ? (
-          <div className="flex justify-center py-20 text-stone-300"><Loader2 className="animate-spin w-10 h-10" /></div>
+          <div className="flex justify-center py-20 text-stone-300">
+            <Loader2 className="animate-spin w-8 h-8 md:w-10 md:h-10" />
+          </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {drafts.map((draft) => (
               <motion.div key={draft.id} whileHover={{ scale: 1.02 }} className="relative group">
                 <Card className="border-stone-200 shadow-sm bg-white overflow-hidden h-full flex flex-col">
@@ -67,18 +71,19 @@ export default function DraftsPage() {
                       <span className="text-[10px] uppercase tracking-widest text-stone-400 font-bold">
                         Saved {new Date(draft.created_at).toLocaleDateString()}
                       </span>
-                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
                         <Button onClick={() => setDeleteId(draft.id)} variant="ghost" size="icon" className="h-8 w-8 text-stone-400 hover:text-red-500">
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
                     </div>
-                    <h2 className="text-xl font-semibold text-stone-800 mb-2">{draft.title}</h2>
+                    <h2 className="text-xl font-semibold text-stone-800 mb-2 line-clamp-1">{draft.title}</h2>
                     <p className="text-stone-500 text-sm italic line-clamp-3">"{draft.content}"</p>
                   </CardContent>
+                  
                   <div className="p-4 bg-stone-50 border-t border-stone-100">
                     <Link href={`/dashboard/create?id=${draft.id}`}>
-                      <Button variant="ghost" className="w-full text-rose-500 hover:text-rose-600 hover:bg-rose-50 gap-2 text-sm font-bold">
+                      <Button variant="ghost" className="w-full text-rose-500 hover:text-rose-600 hover:bg-rose-50 gap-2 text-sm font-bold h-10">
                         <Edit3 className="w-4 h-4" />
                         CONTINUE WRITING
                       </Button>
@@ -88,8 +93,9 @@ export default function DraftsPage() {
               </motion.div>
             ))}
             
+            {/* Start New Draft Button */}
             <Link href="/dashboard/create" className="group">
-              <div className="border-2 border-dashed border-stone-200 rounded-xl h-full min-h-[200px] flex flex-col items-center justify-center text-stone-300 group-hover:border-rose-200 group-hover:text-rose-400 group-hover:bg-rose-50/30 transition-all">
+              <div className="border-2 border-dashed border-stone-200 rounded-xl h-full min-h-[220px] flex flex-col items-center justify-center text-stone-300 group-hover:border-rose-200 group-hover:text-rose-400 group-hover:bg-rose-50/30 transition-all">
                 <Plus className="w-10 h-10 mb-2" />
                 <span className="font-bold text-xs uppercase tracking-widest">Start New Draft</span>
               </div>
@@ -98,17 +104,23 @@ export default function DraftsPage() {
         )}
       </div>
 
+      {/* --- Delete Confirmation --- */}
       <AnimatePresence>
         {deleteId && (
           <div className="fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="bg-white p-8 rounded-[2rem] max-w-sm w-full text-center shadow-2xl">
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }} 
+              animate={{ scale: 1, opacity: 1 }} 
+              className="bg-white p-8 rounded-[1.5rem] md:rounded-[2rem] max-w-sm w-full text-center shadow-2xl"
+            >
               <AlertTriangle className="mx-auto text-rose-500 w-12 h-12 mb-4" />
-              <h3 className="text-xl font-bold mb-4">Discard this draft?</h3>
+              <h3 className="text-xl font-bold mb-2 text-stone-800">Discard this draft?</h3>
+              <p className="text-stone-500 text-sm italic mb-6">This action cannot be undone.</p>
               <div className="flex flex-col gap-2">
-                <Button onClick={handleDelete} disabled={isDeleting} className="bg-rose-500 hover:bg-rose-600 rounded-full">
+                <Button onClick={handleDelete} disabled={isDeleting} className="bg-rose-500 hover:bg-rose-600 rounded-full h-12 text-white">
                   {isDeleting ? <Loader2 className="animate-spin" /> : "Delete Forever"}
                 </Button>
-                <Button variant="ghost" onClick={() => setDeleteId(null)} className="rounded-full">Cancel</Button>
+                <Button variant="ghost" onClick={() => setDeleteId(null)} className="rounded-full h-12 text-stone-400">Cancel</Button>
               </div>
             </motion.div>
           </div>
