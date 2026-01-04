@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, ImagePlus, X, Loader2, Smile } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter, useSearchParams } from "next/navigation";
 
-// Updated Sticker List from /public/stickers/
+// Define available stickers
 const AVAILABLE_STICKERS = [
   { id: 'bday-icon', url: '/stickers/bday-icon.png' },
   { id: 'loopy1', url: '/stickers/loopy1.png' },
@@ -21,7 +21,8 @@ const AVAILABLE_STICKERS = [
   { id: 'melody4', url: '/stickers/melody4.png' },
 ];
 
-export default function CreateLetterPage() {
+// 1. Move the main logic to a sub-component
+function CreateLetterForm() {
   const [previews, setPreviews] = useState<string[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [title, setTitle] = useState("");
@@ -33,6 +34,8 @@ export default function CreateLetterPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
   const router = useRouter();
+  
+  // This hook is what caused the build error
   const searchParams = useSearchParams();
   const draftId = searchParams.get("id");
 
@@ -148,7 +151,6 @@ export default function CreateLetterPage() {
 
           <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="Start writing..." className="flex-1 w-full bg-transparent border-none outline-none text-base sm:text-lg md:text-xl text-stone-700 font-serif italic resize-none min-h-[350px]" />
           
-          {/* Sticker Selection UI */}
           <div className="mt-8 pt-6 border-t border-stone-100">
             <div className="flex items-center gap-2 mb-4">
               <Smile className="w-4 h-4 text-stone-400" />
@@ -178,5 +180,18 @@ export default function CreateLetterPage() {
         </div>
       </motion.div>
     </div>
+  );
+}
+
+// 2. Wrap the form in a Suspense boundary for production builds
+export default function CreateLetterPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-stone-100 flex items-center justify-center">
+        <Loader2 className="animate-spin w-8 h-8 text-rose-500" />
+      </div>
+    }>
+      <CreateLetterForm />
+    </Suspense>
   );
 }
