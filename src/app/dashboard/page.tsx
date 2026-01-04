@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, FolderHeart, X, ChevronLeft, ChevronRight, FileText } from "lucide-react";
+import { Plus, FolderHeart, X, ChevronLeft, ChevronRight, FileText, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { createClient } from "@/utils/supabase/client";
+import { useRouter } from "next/navigation";
 
-
+// Mock Data for the Vault
 const mockLetters = [
   { 
     id: 1, 
@@ -29,11 +31,20 @@ const mockLetters = [
 export default function DashboardPage() {
   const [selectedLetter, setSelectedLetter] = useState<any>(null);
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
+  const supabase = createClient();
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.push("/");
+    router.refresh();
+  };
 
   return (
     <div className="min-h-screen bg-stone-50 p-6 md:p-12 relative overflow-x-hidden">
       <div className="max-w-5xl mx-auto">
         
+        {/* Header Section */}
         <header className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 border-b border-rose-100 pb-6 gap-4">
             <div>
                 <div className="flex items-center gap-2 mb-2">
@@ -46,19 +57,30 @@ export default function DashboardPage() {
             </div>
             
             <div className="flex gap-3">
-                {/* NEW: Drafts Button */}
-                <Link href="/dashboard/drafts">
-                <Button variant="outline" className="rounded-full border-rose-200 text-rose-500 hover:bg-rose-50 gap-2">
-                    <FileText className="w-4 h-4" />
-                    Drafts
+                {/* Logout Button */}
+                <Button 
+                  variant="ghost" 
+                  onClick={handleSignOut}
+                  className="rounded-full text-stone-400 hover:text-rose-500 hover:bg-rose-50 gap-2"
+                >
+                    <LogOut className="w-4 h-4" />
+                    Sign Out
                 </Button>
+
+                {/* Drafts Link */}
+                <Link href="/dashboard/drafts">
+                  <Button variant="outline" className="rounded-full border-rose-200 text-rose-500 hover:bg-rose-50 gap-2">
+                      <FileText className="w-4 h-4" />
+                      Drafts
+                  </Button>
                 </Link>
 
+                {/* Create New Letter Link */}
                 <Link href="/dashboard/create">
-                <Button className="bg-rose-500 hover:bg-rose-600 rounded-full px-6 shadow-lg shadow-rose-200 gap-2 transition-transform active:scale-95">
-                    <Plus className="w-4 h-4" />
-                    Write New Letter
-                </Button>
+                  <Button className="bg-rose-500 hover:bg-rose-600 rounded-full px-6 shadow-lg shadow-rose-200 gap-2 transition-transform active:scale-95">
+                      <Plus className="w-4 h-4" />
+                      Write New Letter
+                  </Button>
                 </Link>
             </div>
         </header>
@@ -86,7 +108,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Expanded Letter View */}
+      {/* Expanded Letter View (Modal) */}
       <AnimatePresence>
         {selectedLetter && (
           <motion.div 
@@ -95,7 +117,6 @@ export default function DashboardPage() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-md flex items-center justify-center p-4 md:p-6"
           >
-            {/* Overlay to close when clicking outside the letter */}
             <div className="absolute inset-0" onClick={() => setSelectedLetter(null)} />
 
             <motion.div 
@@ -103,9 +124,8 @@ export default function DashboardPage() {
               animate={{ y: 0, opacity: 1, scale: 1 }}
               exit={{ y: 50, opacity: 0, scale: 0.9 }}
               className="bg-[#fdfcf0] w-full max-w-5xl max-h-[85vh] rounded-[2rem] shadow-2xl flex flex-col md:flex-row overflow-hidden relative border border-white/20 z-10"
-              onClick={(e) => e.stopPropagation()} // Prevents closing when clicking inside the letter
+              onClick={(e) => e.stopPropagation()}
             >
-              {/* EXIT BUTTON */}
               <button 
                 onClick={() => { setSelectedLetter(null); setCurrentImgIndex(0); }}
                 className="absolute top-6 right-6 z-30 p-2 bg-white/50 hover:bg-rose-100 text-stone-600 hover:text-rose-600 rounded-full transition-colors shadow-sm"
@@ -113,7 +133,7 @@ export default function DashboardPage() {
                 <X className="w-6 h-6" />
               </button>
 
-              {/* LEFT SIDE: Letter Content */}
+              {/* Letter Content Side */}
               <div className="flex-1 p-8 md:p-12 lg:p-16 overflow-y-auto bg-[url('https://www.transparenttextures.com/patterns/lined-paper.png')]">
                 <span className="text-rose-400 font-bold uppercase tracking-widest text-xs">{selectedLetter.date}</span>
                 <h2 className="text-4xl md:text-5xl font-bold text-stone-800 mt-4 mb-8 font-[family-name:var(--font-handwritten)]">
@@ -131,11 +151,9 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* RIGHT SIDE: Picture Frame (The Polaroid) */}
+              {/* Photo Frame Side */}
               <div className="w-full md:w-[42%] bg-stone-100/40 p-6 md:p-10 flex flex-col items-center justify-center border-l border-stone-200">
                 <div className="relative w-full max-w-[320px] aspect-[4/5] bg-white p-4 shadow-xl rotate-1 border border-stone-100 flex flex-col">
-                  
-                  {/* Image Container */}
                   <div className="flex-1 overflow-hidden relative bg-stone-200 rounded-sm">
                     <img 
                       src={selectedLetter.images[currentImgIndex]} 
@@ -143,7 +161,6 @@ export default function DashboardPage() {
                       className="w-full h-full object-cover"
                     />
                     
-                    {/* Photo Navigation */}
                     {selectedLetter.images.length > 1 && (
                       <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-2">
                         <button 
@@ -161,8 +178,6 @@ export default function DashboardPage() {
                       </div>
                     )}
                   </div>
-
-                  {/* Polaroid Bottom */}
                   <div className="mt-4 text-center text-stone-400 font-serif italic text-sm tracking-wide">
                     {selectedLetter.images.length > 1 ? `Memory ${currentImgIndex + 1}/${selectedLetter.images.length}` : 'Special Memory'}
                   </div>
