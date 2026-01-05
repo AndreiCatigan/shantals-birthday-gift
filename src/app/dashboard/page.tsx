@@ -184,7 +184,6 @@ export default function DashboardPage() {
 
       {/* --- MODALS --- */}
       
-      {/* Expanded Letter View */}
       <AnimatePresence>
         {selectedLetter && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-md flex items-center justify-center p-3 md:p-6">
@@ -240,7 +239,21 @@ export default function DashboardPage() {
         )}
       </AnimatePresence>
 
-      {/* Delete Confirmation Modal Code remains the same */}
+      <AnimatePresence>
+        {letterToDelete && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[60] bg-stone-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+            <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-white rounded-[1.5rem] p-6 md:p-8 max-w-sm w-full shadow-2xl text-center">
+              <AlertTriangle className="text-rose-500 w-12 h-12 mx-auto mb-4" />
+              <h3 className="text-xl md:text-2xl font-bold text-stone-800 mb-2">Are you sure?</h3>
+              <p className="text-sm md:text-base text-stone-500 mb-6 font-serif italic">This memory will be gone forever.</p>
+              <div className="flex flex-col gap-3">
+                <Button onClick={confirmDelete} disabled={isDeleting} className="bg-rose-500 hover:bg-rose-600 text-white rounded-full py-5 md:py-6 text-base font-bold">{isDeleting ? <Loader2 className="animate-spin" /> : "Yes, Delete Forever"}</Button>
+                <Button variant="ghost" onClick={() => setLetterToDelete(null)} className="rounded-full text-stone-400">Cancel</Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
